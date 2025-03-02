@@ -1,22 +1,15 @@
 const db = require('../config/db');
-const bcrypt = require('bcrypt');
 
 const registerSeller = async (req, res) => {
     try {
-        const { first_name, last_name, email, contact_no, password, store_name, store_address, profile_picture } = req.body;
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(password, salt);
+        const { first_name, last_name, email, contact_no, store_name, store_address, password, confirm_password } = req.body;
 
-        const [userResult] = await db.execute(
-            'INSERT INTO users (first_name, last_name, email, contact_no, password_hash, role) VALUES (?, ?, ?, ?, ?, ?)',
-            [first_name, last_name, email, contact_no, hashedPassword, "seller"]
-        );
-
-        const userId = userResult.insertId;
-
+        if (password !== confirm_password) {
+            return res.status(400).json({ error: 'Passwords do not match' });
+        }
         await db.execute(
-            'INSERT INTO sellers (user_id, store_name, store_address, profile_picture) VALUES (?, ?, ?, ?)',
-            [userId, store_name, store_address, profile_picture]
+            'INSERT INTO Seller (first_name, last_name, email, contact_no, store_name, store_address, password) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            [first_name, last_name, email, contact_no, store_name, store_address, password]
         );
 
         res.json({ message: 'Seller registered successfully' });
@@ -30,11 +23,12 @@ const getSeller = async (req, res) => {
     try {
         const { id } = req.params;
         const [result] = await db.execute(
-            'SELECT users.first_name, users.last_name, users.email, users.contact_no, sellers.store_name, sellers.store_address, sellers.profile_picture FROM users INNER JOIN sellers ON users.id = sellers.user_id WHERE sellers.id = ?',
+            'SELECT first_name, last_name, email, contact_no, store_name, store_address FROM Seller WHERE id = ?',
             [id]
         );
-        if (result.length === 0) return res.status(404).json({ error: 'Seller not found' });
-
+        if (result.length === 0) {
+            return res.status(404).json({ error: 'Seller not found' });
+        }
         res.json(result[0]);
     } catch (error) {
         console.error(error);
@@ -42,27 +36,57 @@ const getSeller = async (req, res) => {
     }
 };
 
+
+
 const updateSeller = async (req, res) => {
     try {
         const { id } = req.params;
-        const { store_name, store_address, profile_picture } = req.body;
+        const { password, confirm_password, contact_no } = req.body;
 
-        await db.execute(
-            'UPDATE sellers SET store_name = ?, store_address = ?, profile_picture = ? WHERE id = ?',
-            [store_name, store_address, profile_picture, id]
-        );
+        // Validate input
+        if (!id) {
+            return res.status(400).json({ error: 'Seller ID is required' });
+        }
 
-        res.json({ message: 'Seller updated successfully' });
+        if (!contact_no && !password) {
+            return res.status(400).json({ error: 'At least one field (password or contact_no) is required for update' });
+        }
+
+        let query = 'UPDATE Seller SET';
+        const values = [];
+        
+        if (contact_no) {
+            query += ' contact_no = ?,';
+            values.push(contact_no);
+        }
+
+        if (password) {
+            if (!confirm_password || password !== confirm_password) {
+                return res.status(400).json({ error: 'Passwords do not match' });
+            }
+            
+            query += ' password = ?,';
+            values.push(password);
+        }
+
+        // Remove trailing comma and add WHERE condition
+        query = query.replace(/,$/, ' WHERE id = ?');
+        values.push(id);
+
+        await db.execute(query, values);
+
+        res.json({ message: 'Seller profile updated successfully' });
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Error updating seller details' });
     }
 };
 
+
 const deleteSeller = async (req, res) => {
     try {
         const { id } = req.params;
-        await db.execute('DELETE FROM users WHERE id = (SELECT user_id FROM sellers WHERE id = ?)', [id]);
+        await db.execute('DELETE FROM Seller WHERE id = ?', [id]);
 
         res.json({ message: 'Seller deleted successfully' });
     } catch (error) {
