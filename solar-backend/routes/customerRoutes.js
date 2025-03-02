@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
-const { getCustomer,deleteCustomer,updateCustomer,registerCustomer } = require("../controllers/customerController"); // Ensure this is correctly imported
-const {loginCustomer} = require("../controllers/CustomerLogin");
+const { getCustomer,deleteCustomer,updateCustomer,registerCustomer } = require("../controllers/Customers/customerController"); // Ensure this is correctly imported
+const {loginCustomer} = require("../controllers/Customers/CustomerLogin");
 
 router.get("/getCustomer/:id", getCustomer);
 router.delete("/deleteCustomer/:id", deleteCustomer); // Ensure this function is defined in CustomerController.js
