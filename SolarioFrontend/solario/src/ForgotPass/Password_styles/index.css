@@ -1,0 +1,20 @@
+/* Ensure global background is applied to all pages */
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background-color: #f5f5f5; /* Set a neutral background */
+}
+
+/* Override specific page styles if needed */
+.home-page {
+    background:none no-repeat center center;
+    background-size: cover;
+    height: 100vh;
+}
+
+.login-page {
+    background:none no-repeat center center;
+    background-size: cover;
+    height: 100vh;
+}
