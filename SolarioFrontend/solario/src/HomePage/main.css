@@ -1,107 +1,66 @@
-/* General Styles */
-body {
-  margin: 0;
-  font-family: "Outfit", sans-serif;
-  overflow: hidden;
-}
-
 .opening-container {
   position: relative;
-  width: 100vw;
-  height: 100vh;
+  background-color: #ffffff00;
+  left: 241px;
+  width: 80vw;
+  height: 80vh;
+  overflow: hidden;
+  top: 115px;
+}
+
+.Home-background {
+  background: #f5f5f5;
+  height: 90vh;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-/* Background Image */
-.background-image {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-size: cover;
-  background-position: center;
-  z-index: -1;
+.logo-container {
+  margin-bottom: 3rem;
 }
 
-/* Overlay */
-.overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.3);
-}
-
-/* Content */
-.content {
-  border-radius: 40px;
-  width: 90%;
-  height: 65%;
-  background-color: rgba(240, 248, 255, 0.226);
-  text-align: center;
-  z-index: 1;
-}
-
-/* Sun Icon Container */
-.sun-container {
-  width: 100px;
-  height: 100px;
-  background: linear-gradient(145deg, #e48d23, #ffd700);
-  border-radius: 24px;
-  box-shadow: 3px 5px 10px rgba(184, 115, 51, 0.5);
-  display: flex;
-  justify-content: center;
-  position: relative;
-  top: 57px;
-  left: 150px;
-  align-items: center;
-  margin-bottom: 70px;
-}
-
-.sun-icon {
-  font-size: 50px;
+.main-logo {
+  font-size: 4rem;
+  font-weight: 700;
   color: white;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  margin-bottom: 0.5rem;
+  letter-spacing: 2px;
 }
 
-/* Welcome Text */
-.welcome-text {
-  font-size: 40px;
-  font-weight: 500;
-  color: #ffd700;
-  text-shadow: 2px 2px 2px rgba(231, 184, 76, 0.8);
-  margin-bottom: 10px;
+.sub-logo {
+  font-size: 1.8rem;
+  color: white;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+  letter-spacing: 1px;
 }
 
-/* Subtitle Text */
-.subtitle-text {
-  font-size: 22px;
-  font-weight: 500;
-  color: #ffd700;
-  text-shadow: 2px 2px 2px rgba(231, 184, 76, 0.8);
-  margin-bottom: 250px;
-}
-
-/* Get Started Button */
 .get-started-button {
-  width: 223.7px;
-  height: 40px;
-  background-color: #ffd700;
-  border: none;
-  border-radius: 24px;
-  color: #ffffff;
-  font-size: 18px;
-  font-weight: 550;
+  padding: 1rem 3rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+  background-color: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 2px solid white;
+  border-radius: 50px;
   cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(5px);
 }
 
-.get-started-button:hover {
-  background-color: #ffffff;
-  color: #e48d23;
-  font-weight: 550;
-  font-size: 18px;
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .main-logo {
+    font-size: 2.5rem;
+  }
   
+  .sub-logo {
+    font-size: 1.2rem;
+  }
+  
+  .get-started-button {
+    padding: 0.8rem 2rem;
+    font-size: 1rem;
+  }
 }

@@ -1,0 +1,190 @@
+import React, { useState, useEffect } from 'react';
+import './StoreDetailsPage.css';
+import axios from "axios";
+import { useNavigate } from 'react-router-dom';
+
+const StoreDetailsPage = () => {
+  const [storeData, setStoreData] = useState(null);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [sellerId, setSellerId] = useState('');
+  const [imageLoadErrors, setImageLoadErrors] = useState({});
+  const navigate = useNavigate();
+
+  // Handle image loading errors
+  const handleImageError = (imageType, id) => {
+    setImageLoadErrors(prev => ({ ...prev, [`${imageType}_${id}`]: true }));
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const storedId = localStorage.getItem('selectedSellerId');
+        console.log('Stored sellerId:', storedId);
+        
+        if (!storedId) {
+          throw new Error("Seller ID is missing");
+        }
+        
+        setSellerId(storedId);
+        setLoading(true);
+
+        // Fetch store data
+        const storeResponse = await axios.get(`http://localhost:5000/api/seller/getSeller/${storedId}`);
+        if (!storeResponse.data) {
+          throw new Error("No store data received");
+        }
+        setStoreData(storeResponse.data);
+
+        // Fetch products
+        const productsResponse = await axios.get(`http://localhost:5000/api/products/ParticularProduct/${storedId}`);
+        const receivedProducts = productsResponse.data;
+        const productsArray = Array.isArray(receivedProducts) 
+          ? receivedProducts 
+          : receivedProducts?.products || [];
+        
+        setProducts(productsArray);
+        setLoading(false);
+        
+      } catch (err) {
+        console.error('Error:', err);
+        setError(err.message);
+        setLoading(false);
+        
+        if (err.message.includes("Seller ID is missing")) {
+          navigate(-1);
+        }
+      }
+    };
+
+    fetchData();
+  }, [navigate]);
+
+  if (loading) {
+    return (
+      <div className="loading-container">
+        <div className="loading-spinner"></div>
+        <p>Loading store details...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="error-container">
+        <div className="error-message">Error: {error}</div>
+        <button onClick={() => window.location.reload()} className="retry-button">
+          Try Again
+        </button>
+      </div>
+    );
+  }
+
+  if (!storeData) {
+    return (
+      <div className="no-data-container">
+        <p>No store data found</p>
+        <button onClick={() => navigate('/')} className="home-button">
+          Go to Home
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="store-details-container">
+      {/* Store Header */}
+      <div className="store-header">
+        <div className="store-image-container">
+          {imageLoadErrors[`store_${sellerId}`] ? (
+            <div className="image-placeholder">
+              <span>Store Image</span>
+            </div>
+          ) : (
+            <img 
+              src={
+                (storeData.store_photos && `http://localhost:5000/${storeData.store_photos.split(',')[0]}`) || 
+                ''
+              }
+              alt={storeData.store_name}
+              className="store-image"
+              onError={() => handleImageError('store', sellerId)}
+            />
+          )}
+        </div>
+        
+        <div className="store-info">
+          <h1 className="store-name">{storeData.store_name}</h1>
+          <div className="store-meta">
+            <span className="store-city">{storeData.city}</span>
+            {storeData.contact_number && (
+              <span className="store-contact">Contact: {storeData.contact_number}</span>
+            )}
+          </div>
+          {storeData.store_description && (
+            <p className="store-description">{storeData.store_description}</p>
+          )}
+        </div>
+      </div>
+
+      {/* Products Section */}
+      <div className="products-section">
+        <h2 className="products-heading">Available Products</h2>
+        
+        {products.length === 0 ? (
+          <div className="no-products-container">
+            <p className="no-products-message">No products available</p>
+            <button onClick={() => navigate(-1)} className="back-button">
+              Back to Stores
+            </button>
+          </div>
+        ) : (
+          <div className="products-grid">
+            {products.map((product) => (
+              <div key={product.id} className="product-card">
+                <div className="product-image-container">
+                  {imageLoadErrors[`product_${product.id}`] ? (
+                    <div className="image-placeholder">
+                      <span>Product Image</span>
+                    </div>
+                  ) : (
+                    <img 
+                      src={
+                        product.product_image 
+                          ? `http://localhost:5000/uploads/${product.product_image}`
+                          : ''
+                      }
+                      alt={product.name}
+                      className="product-image"
+                      onError={() => handleImageError('product', product.id)}
+                    />
+                  )}
+                </div>
+                
+                <div className="product-info">
+                  <h3 className="product-name">{product.name}</h3>
+                  <p className="product-category">{product.category}</p>
+                  <p className="product-price">
+                    ${typeof product.price === 'number' ? product.price.toFixed(2) : '0.00'}
+                  </p>
+                  <div className="product-stock">
+                    {product.stock_quantity > 0 ? (
+                      <span className="in-stock">
+                        In Stock ({product.stock_quantity})
+                      </span>
+                    ) : (
+                      <span className="out-of-stock">Out of Stock</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default StoreDetailsPage;

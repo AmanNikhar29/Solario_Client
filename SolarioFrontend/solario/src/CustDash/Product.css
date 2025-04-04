@@ -1,0 +1,486 @@
+/* StoreDetailsPage.css */
+
+.store-details-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: 'Amazon Ember', Arial, sans-serif;
+  background-color: #f3f3f3;
+}
+
+/* Loading and Error States */
+.loading-container, .error-container, .no-data-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 60vh;
+  text-align: center;
+}
+
+.loading-spinner {
+  border: 5px solid #f3f3f3;
+  border-top: 5px solid #FF9900;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.error-message {
+  color: #c40000;
+  font-size: 18px;
+  margin-bottom: 20px;
+}
+
+.retry-button, .home-button, .back-button {
+  background-color: #FF9900;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s;
+}
+
+.retry-button:hover, .home-button:hover, .back-button:hover {
+  background-color: #e68a00;
+}
+
+/* Store Header Section */
+.store-header {
+  display: flex;
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.store-image-container {
+  width: 200px;
+  height: 200px;
+  margin-right: 30px;
+  position: relative;
+}
+
+.store-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.image-placeholder {
+  width: 100%;
+  height: 100%;
+  background-color: #f7f7f7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #555;
+  border-radius: 8px;
+}
+
+.store-info {
+  flex: 1;
+}
+
+.store-name {
+  font-size: 24px;
+  margin: 0 0 10px 0;
+  color: #0066c0;
+}
+
+.store-meta {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 15px;
+  font-size: 14px;
+  color: #555;
+}
+
+.store-contact {
+  color: #0066c0;
+}
+
+.store-description {
+  font-size: 14px;
+  color: #555;
+  line-height: 1.5;
+  margin-bottom: 15px;
+}
+
+.store-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.follow-store, .share-store {
+  padding: 8px 15px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.follow-store {
+  background-color: #FFD814;
+  border: none;
+}
+
+.share-store {
+  background-color: white;
+  border: 1px solid #D5D9D9;
+}
+
+/* Products Section */
+.products-section {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e7e7e7;
+}
+
+.products-heading {
+  font-size: 20px;
+  margin: 0;
+  color: #0F1111;
+}
+
+.sort-dropdown {
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #D5D9D9;
+  background-color: #F0F2F2;
+  cursor: pointer;
+}
+
+.no-products-container {
+  text-align: center;
+  padding: 40px 0;
+}
+
+.no-products-message {
+  color: #555;
+  margin-bottom: 20px;
+}
+
+/* Products Grid */
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 20px;
+}
+
+.product-card {
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #e7e7e7;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+}
+
+.product-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.product-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background-color: #CC0C39;
+  color: white;
+  padding: 3px 8px;
+  border-radius: 3px;
+  font-size: 12px;
+  font-weight: bold;
+  z-index: 1;
+}
+
+.product-image-container {
+  height: 200px;
+  position: relative;
+  overflow: hidden;
+}
+
+.product-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transition: transform 0.3s ease;
+}
+
+.product-card:hover .product-image {
+  transform: scale(1.05);
+}
+
+.product-info {
+  padding: 15px;
+}
+
+.product-name {
+  font-size: 16px;
+  margin: 0 0 8px 0;
+  color: #0F1111;
+  height: 40px;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.product-rating {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.stars {
+  color: #FFA41C;
+  font-size: 14px;
+  letter-spacing: 2px;
+}
+
+.rating-count {
+  color: #0066c0;
+  font-size: 12px;
+  margin-left: 5px;
+}
+
+.product-category {
+  font-size: 12px;
+  color: #565959;
+  margin: 0 0 8px 0;
+}
+
+.product-price {
+  font-size: 18px;
+  font-weight: bold;
+  color: #B12704;
+  margin: 0 0 8px 0;
+}
+
+.product-stock {
+  margin-bottom: 15px;
+}
+
+.in-stock {
+  color: #007600;
+  font-size: 12px;
+}
+
+.out-of-stock {
+  color: #B12704;
+  font-size: 12px;
+}
+
+.product-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.add-to-cart, .buy-now {
+  flex: 1;
+  padding: 8px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  border: none;
+  transition: background-color 0.2s;
+}
+
+.add-to-cart {
+  background-color: #FFD814;
+}
+
+.add-to-cart:hover {
+  background-color: #F7CA00;
+}
+
+.buy-now {
+  background-color: #FFA41C;
+}
+
+.buy-now:hover {
+  background-color: #FA8900;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .store-header {
+    flex-direction: column;
+  }
+  
+  .store-image-container {
+    margin-right: 0;
+    margin-bottom: 20px;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1/1;
+  }
+  
+  .products-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+  
+  .product-actions {
+    flex-direction: column;
+  }
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-container {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  width: 90%;
+  max-width: 400px;
+  padding: 20px;
+  animation: modalFadeIn 0.3s ease-out;
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.modal-content {
+  text-align: center;
+}
+
+.modal-content h3 {
+  margin-bottom: 15px;
+  color: #333;
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.modal-buttons button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-container {
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  width: 90%;
+  max-width: 400px;
+  padding: 25px;
+  text-align: center;
+  animation: modalFadeIn 0.3s ease-out;
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.modal-container h3 {
+  margin: 0 0 15px;
+  color: #333;
+  font-size: 1.5rem;
+}
+
+.modal-container p {
+  margin: 0 0 25px;
+  color: #666;
+  font-size: 1.1rem;
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+.modal-buttons button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.modal-confirm {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.modal-cancel {
+  background-color: #f44336;
+  color: white;
+}
+
+.modal-view-cart {
+  background-color: #2196F3;
+  color: white;
+}
+
+.modal-continue {
+  background-color: #ff9800;
+  color: white;
+}
+
+.modal-buttons button:hover {
+  opacity: 0.9;
+  transform: translateY(-2px);
+  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.2);
+}

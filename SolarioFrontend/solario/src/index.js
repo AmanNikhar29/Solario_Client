@@ -8,12 +8,16 @@ import OtpVerification from "./ForgotPass/Password_js/otpVeri";
 import ResetPassword from "./ForgotPass/Password_js/resetPass";
 import Home from "./HomePage/MainPage";
 import Register from './AuthPage/JS/Reg';
-import Customer from './SellerDash/CustomerDash';
+import Customer from './CustDash/CustomerDash';
+import Store from './CustDash/Product';
+import Cart from './CustDash/CartPage';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 const root = ReactDOM.createRoot(document.getElementById("root"));
 
 
 root.render(
   <React.StrictMode>
+        <GoogleOAuthProvider clientId="717554330174-7vv47vah7e1jb5mqfb49n6th45p8qdtc.apps.googleusercontent.com">
     <BrowserRouter>
       <Routes>
         {/* Login Page (Default Route) */}
@@ -29,10 +33,13 @@ root.render(
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/Seller" element={<Customer />} />
+        <Route path="/Customer" element={<Customer />} />
+        <Route path="/Store/:SellerId" element={<Store />} />
+        <Route path="/Cart" element={<Cart />} />
       
         
       </Routes>
     </BrowserRouter>
+    </GoogleOAuthProvider>
   </React.StrictMode>
 );
