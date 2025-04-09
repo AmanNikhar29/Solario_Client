@@ -10,17 +10,32 @@
   --transition: all 0.3s ease;
 }
 
+.CustBack {
+  background-color: var(--light-color);
+}
+
 .customer-dashboard {
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
   font-family: 'Roboto', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: var(--light-color);
   min-height: 100vh;
 }
 
 .dashboard-nav {
   margin-bottom: 30px;
+}
+
+.Report {
+  position: relative;
+  left: 1000px;
+  bottom: 67px;
+  border: none;
+  background-color: #1a66e6;
+  border-radius: 10px;
+  color: white;
+  width: 141px;
+  height: 47px;
 }
 
 .dashboard-header {
@@ -54,6 +69,11 @@
   background-color: rgba(0, 0, 0, 0.05);
 }
 
+.menu-icon {
+  font-size: 32px !important;
+  color: var(--dark-color);
+}
+
 .cart-icon-container {
   cursor: pointer;
   padding: 8px;
@@ -61,7 +81,27 @@
   transition: var(--transition);
 }
 
-.cart-icon-container:hover {
+.fav-icon-container {
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  transition: var(--transition);
+  margin-right: 10px;
+} 
+
+.cart-icon {
+  font-size: 32px !important;
+  color: var(--dark-color);
+}
+
+.fav-icon {
+  position: relative;
+  top: 2px;
+  font-size: 32px !important;
+  color: var(--dark-color);
+}
+
+.cart-icon-container:hover, .fav-icon-container:hover {
   background-color: rgba(0, 0, 0, 0.05);
 }
 
@@ -382,6 +422,13 @@
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
     gap: 15px;
   }
+
+  .Report {
+    left: auto;
+    bottom: auto;
+    margin-top: 15px;
+    width: 100%;
+  }
 }
 
 @media (max-width: 480px) {
@@ -399,5 +446,11 @@
   
   .image-container {
     height: 180px;
+  }
+
+  .menu-icon,
+  .cart-icon,
+  .fav-icon {
+    font-size: 1.5rem !important;
   }
 }

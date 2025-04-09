@@ -70,7 +70,6 @@ const CustomerDashboard = () => {
     navigate(`/Store/${sellerId}`);
   };
 
-
   const requestLocationAccess = () => {
     setLocationLoading(true);
     setLocationError(null);
@@ -112,11 +111,15 @@ const CustomerDashboard = () => {
     setIsDrawerOpen(open);
   };
 
+  const handleFavourate = async () => {
+    navigate('/Fav')
+  }
+
   const handleLogout = async () => {
     const confirmLogout = window.confirm("Are you sure you want to logout?");
     
       if (!confirmLogout) {
-        return; // If user cancels, do nothing
+        return;
       }
     try {
       
@@ -183,136 +186,142 @@ const CustomerDashboard = () => {
   );
 
   return (
-    <div className="customer-dashboard">
-      {/* Navigation Header */}
-      <div className="dashboard-nav">
-        <div className="dashboard-header">
-          <button className="profile-menu-button" onClick={toggleDrawer(true)}>
-            <MenuIcon />
-          </button>
-          <h1 className="nav-title">Local Stores</h1>
-          <div className="cart-icon-container" onClick={handleCartClick}>
-            <Badge badgeContent={cartItemsCount} color="primary">
-              <ShoppingCartIcon />
-            </Badge>
-          </div>
-        </div>
-
-        {/* Profile Drawer */}
-        <Drawer
-          anchor="left"
-          open={isDrawerOpen}
-          onClose={toggleDrawer(false)}
-          PaperProps={{
-            sx: {
-              width: 300,
-              backgroundColor: '#f5f5f5'
-            }
-          }}
-        >
-          {profileDrawerContent()}
-        </Drawer>
-
-        <div className="location-controls">
-          {locationEnabled ? (
-            <div className="location-display">
-              <span className="location-icon">📍</span>
-              <span className="location-text">
-                {userLocation ? `Near you (${userLocation.lat.toFixed(4)}, ${userLocation.lng.toFixed(4)})` : "Location enabled"}
-              </span>
-            </div>
-          ) : (
-            <button 
-              className="location-button"
-              onClick={requestLocationAccess}
-              disabled={locationLoading}
-            >
-              {locationLoading ? (
-                <span className="button-loading">
-                  <span className="spinner"></span> Detecting...
-                </span>
-              ) : (
-                <>
-                  <span className="location-icon">📍</span>
-                  Enable Location
-                </>
-              )}
+    <div className="CustBack">
+      <div className="customer-dashboard">
+        {/* Navigation Header */}
+        <div className="dashboard-nav">
+          <div className="dashboard-header">
+            <button className="profile-menu-button" onClick={toggleDrawer(true)}>
+              <MenuIcon className="menu-icon" />
             </button>
-          )}
-          {locationError && (
-            <div className="location-error">{locationError}</div>
-          )}
-        </div>
-
-        <div className="search-container">
-          <input
-            type="text"
-            placeholder="Search stores or cities..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="search-input"
-          />
-          <i className="search-icon">🔍</i>
-        </div>
-      </div>
-      
-      {loading ? (
-        <div className="loading-container">
-          <div className="loading-spinner"></div>
-          <p>Loading stores...</p>
-        </div>
-      ) : (
-        <div className="sellers-container">
-          {filteredSellers.length > 0 ? (
-            filteredSellers.map((seller, index) => {
-              const storePhotos = seller.store_photos ? seller.store_photos.split(',') : [];
-              const firstPhoto = storePhotos.length > 0 ? storePhotos[0].trim() : null;
-
-              return (
-                <div 
-                  key={index} 
-                  className="seller-card"
-                  onClick={() => handleSellerClick(seller.seller_id)}
-                >
-                  <div className="image-container">
-                    {firstPhoto ? (
-                      <img 
-                        src={`http://localhost:5000${firstPhoto.startsWith('/') ? '' : '/'}${firstPhoto}`}
-                        alt={seller.store_name}
-                        className="seller-image"
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.src = '/default-store.png';
-                        }}
-                      />
-                    ) : (
-                      <div className="image-placeholder">
-                        <span>No Image Available</span>
-                      </div>
-                    )}
-                  </div>
-                  <div className="seller-info">
-                    <h2 className="seller-name">{seller.store_name}</h2>
-                    <p className="seller-address">
-                      <span className="location-icon">📍</span> {seller.city}
-                    </p>
-                    <div className="rating-container">
-                      <div className="stars">★★★★☆</div>
-                      <span className="rating-text">4.2 (120)</span>
-                    </div>
-                    <button className="view-store-btn">Visit Store</button>
-                  </div>
-                </div>
-              );
-            })
-          ) : (
-            <div className="no-results">
-              <img src="/no-results.png" alt="No results" className="no-results-img" />
-              <p className="no-results-text">No stores found matching your search.</p>
+            <h1 className="nav-title">Local Stores</h1>
+            <div className="fav-icon-container">
+              <FavoriteIcon className="fav-icon" onClick={handleFavourate} />
             </div>
-          )}
+            <div className="cart-icon-container" onClick={handleCartClick}>
+              <Badge badgeContent={cartItemsCount} color="primary">
+                <ShoppingCartIcon className="cart-icon" />
+              </Badge>
+            </div>
+          </div>
+
+          {/* Profile Drawer */}
+          <Drawer
+            anchor="left"
+            open={isDrawerOpen}
+            onClose={toggleDrawer(false)}
+            PaperProps={{
+              sx: {
+                width: 300,
+                backgroundColor: '#f5f5f5'
+              }
+            }}
+          >
+            {profileDrawerContent()}
+          </Drawer>
+
+          <div className="location-controls">
+            {locationEnabled ? (
+              <div className="location-display">
+                <span className="location-icon">📍</span>
+                <span className="location-text">
+                  {userLocation ? `Near you (${userLocation.lat.toFixed(4)}, ${userLocation.lng.toFixed(4)})` : "Location enabled"}
+                </span>
+              </div>
+            ) : (
+              <button 
+                className="location-button"
+                onClick={requestLocationAccess}
+                disabled={locationLoading}
+              >
+                {locationLoading ? (
+                  <span className="button-loading">
+                    <span className="spinner"></span> Detecting...
+                  </span>
+                ) : (
+                  <>
+                    <span className="location-icon">📍</span>
+                    Enable Location
+                  </>
+                )}
+              </button>
+            )}
+            {locationError && (
+              <div className="location-error">{locationError}</div>
+            )}
+          </div>
+
+          <div className="search-container">
+            <input
+              type="text"
+              placeholder="Search stores or cities..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="search-input"
+            />
+            <i className="search-icon">🔍</i>
+          </div>
+          <button onClick={()=>navigate('/Report')} className="Report">Send Requirements Report</button>
         </div>
-      )}
+        
+        {loading ? (
+          <div className="loading-container">
+            <div className="loading-spinner"></div>
+            <p>Loading stores...</p>
+          </div>
+        ) : (
+          <div className="sellers-container">
+            {filteredSellers.length > 0 ? (
+              filteredSellers.map((seller, index) => {
+                const storePhotos = seller.store_photos ? seller.store_photos.split(',') : [];
+                const firstPhoto = storePhotos.length > 0 ? storePhotos[0].trim() : null;
+
+                return (
+                  <div 
+                    key={index} 
+                    className="seller-card"
+                    onClick={() => handleSellerClick(seller.seller_id)}
+                  >
+                    <div className="image-container">
+                      {firstPhoto ? (
+                        <img 
+                          src={`http://localhost:5000${firstPhoto.startsWith('/') ? '' : '/'}${firstPhoto}`}
+                          alt={seller.store_name}
+                          className="seller-image"
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = '/default-store.png';
+                          }}
+                        />
+                      ) : (
+                        <div className="image-placeholder">
+                          <span>No Image Available</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="seller-info">
+                      <h2 className="seller-name">{seller.store_name}</h2>
+                      <p className="seller-address">
+                        <span className="location-icon">📍</span> {seller.city}
+                      </p>
+                      <div className="rating-container">
+                        <div className="stars">★★★★☆</div>
+                        <span className="rating-text">4.2 (120)</span>
+                      </div>
+                      <button className="view-store-btn">Visit Store</button>
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <div className="no-results">
+                <img src="/no-results.png" alt="No results" className="no-results-img" />
+                <p className="no-results-text">No stores found matching your search.</p>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

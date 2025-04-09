@@ -1,15 +1,25 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { useNavigate } from "react-router-dom";
 import './Cart.css';
 
 const CartPage = () => {
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [prevCartItems] = useState("");
+  const [imageLoadErrors, setImageLoadErrors] = useState({});
   
   // Get customer data from localStorage
   const customerData = JSON.parse(localStorage.getItem('customer'));
   const customerId = customerData?.id;
-  
+  const navigate = useNavigate();
+
+  // Image error handler
+  const handleImageError = (imageType, id) => {
+    setImageLoadErrors(prev => ({ ...prev, [`${imageType}_${id}`]: true }));
+  };
+
   // Fetch cart items from API
   useEffect(() => {
     const fetchCartItems = async () => {
@@ -20,17 +30,12 @@ const CartPage = () => {
           throw new Error('Customer ID not found. Please login again.');
         }
         
-        const response = await fetch(`http://localhost:5001/api/cart/count/${customerId}`);
+        const response = await axios.get(`http://localhost:5001/api/cart/${customerId}`);
         
-        if (!response.ok) {
-          throw new Error(`Failed to load cart: ${response.statusText}`);
-        }
-        
-        const data = await response.json();
-        setCartItems(data.items || []);
+        setCartItems(response.data.items || []);
         setLoading(false);
       } catch (err) {
-        setError(err.message);
+        setError(err.response?.data?.message || err.message);
         setLoading(false);
         console.error("Failed to fetch cart items:", err);
       }
@@ -43,6 +48,9 @@ const CartPage = () => {
     if (newQuantity < 1) return;
     
     try {
+      // Store the previous state in case we need to revert
+      const prevCartItems = [...cartItems];
+      
       // Optimistic UI update - update local state first
       setCartItems(prevItems => 
         prevItems.map(item => 
@@ -51,59 +59,42 @@ const CartPage = () => {
       );
       
       // Update quantity on server
-      const response = await fetch(`http://localhost:5001/api/cart/${customerId}/{id}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ quantity: newQuantity }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to update quantity');
-      }
-
-      // If server update fails, revert the local state
-      const updatedData = await response.json();
-      setCartItems(prevItems => 
-        prevItems.map(item => 
-          item.id === id ? { ...item, quantity: updatedData.quantity } : item
-        )
+      await axios.patch(
+        `http://localhost:5001/api/cart/${customerId}/${id}`,
+        { quantity: newQuantity }
       );
+
     } catch (err) {
       console.error("Failed to update quantity:", err);
       // Revert to previous state if error occurs
-      setCartItems(prevItems => [...prevItems]);
-      alert('Failed to update quantity. Please try again.');
+      setCartItems(prevCartItems);
+      alert(err.response?.data?.message || 'Failed to update quantity. Please try again.');
     }
   };
 
   const removeItem = async (id) => {
     try {
       // Store the item to remove in case we need to revert
-      const itemToRemove = cartItems.find(item => item.id === id);
+      const prevCartItems = [...cartItems];
       
       // Optimistic UI update
       setCartItems(prevItems => prevItems.filter(item => item.id !== id));
       
       // Remove item from server
-      const response = await fetch(`http://localhost:5001/api/cart/${customerId}/${id}`, {
-        method: 'DELETE',
-      });
-  
-      if (!response.ok) {
-        throw new Error('Failed to remove item');
-      }
+      await axios.delete(`http://localhost:5001/api/cart/${customerId}/${id}`);
     } catch (err) {
       console.error("Failed to remove item:", err);
       // Revert to previous state if error occurs
-      setCartItems(prevItems => [...prevItems]);
-      alert('Failed to remove item. Please try again.');
+      setCartItems(prevCartItems);
+      alert(err.response?.data?.message || 'Failed to remove item. Please try again.');
     }
   };
 
   const toggleSaveForLater = async (id) => {
     try {
+      // Store the previous state in case we need to revert
+      const prevCartItems = [...cartItems];
+      
       // Find the item to update
       const itemToUpdate = cartItems.find(item => item.id === id);
       const newStatus = !itemToUpdate.isSavedForLater;
@@ -116,22 +107,15 @@ const CartPage = () => {
       );
       
       // Update save status on server
-      const response = await fetch(`http://localhost:5001/api/cart/${customerId}/${id}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ isSavedForLater: newStatus }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to update save status');
-      }
+      await axios.patch(
+        `http://localhost:5001/api/cart/${customerId}/${id}`,
+        { isSavedForLater: newStatus }
+      );
     } catch (err) {
       console.error("Failed to update save status:", err);
       // Revert to previous state if error occurs
-      setCartItems(prevItems => [...prevItems]);
-      alert('Failed to update item status. Please try again.');
+      setCartItems(prevCartItems);
+      alert(err.response?.data?.message || 'Failed to update item status. Please try again.');
     }
   };
 
@@ -153,8 +137,7 @@ const CartPage = () => {
       alert('Your cart is empty. Please add items before checkout.');
       return;
     }
-    // Navigate to checkout page
-    window.location.href = '/checkout';
+    navigate('/Payment')
   };
 
   if (loading) {
@@ -194,21 +177,26 @@ const CartPage = () => {
               {activeItems.map(item => (
                 <div key={item.id} className="cart-item">
                   <div className="item-image">
-                    <img src={item.image || '/default-product.png'} alt={item.title} 
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = '/default-product.png';
-                      }}
-                    />
+                    {imageLoadErrors[`product_${item.id}`] ? (
+                      <div className="image-placeholder">
+                        <span>Product Image</span>
+                      </div>
+                    ) : (
+                      <img 
+                        src={
+                          item.image 
+                            ? `http://localhost:5000/uploads/${item.image}`
+                            : '/default-product.png'
+                        }
+                        alt={item.pr_name}
+                        onError={() => handleImageError('product', item.id)}
+                      />
+                    )}
                   </div>
                   <div className="item-details">
-                    <h3 className="item-title">{item.title || 'Untitled Product'}</h3>
-                    <p className="item-seller">Sold by: {item.seller || 'Unknown Seller'}</p>
-                    {item.inStock ? (
+                    <h3 className="item-title">{item.pr_name || 'Untitled Product'}</h3>
                       <p className="item-delivery">Delivery by {item.deliveryDate || 'Within 3-5 days'}</p>
-                    ) : (
-                      <p className="item-delivery out-of-stock">Currently out of stock</p>
-                    )}
+                    
                     
                     <div className="item-price">
                       <span className="current-price">₹{(item.price || 0).toLocaleString('en-IN')}</span>
@@ -267,16 +255,25 @@ const CartPage = () => {
               {savedItems.map(item => (
                 <div key={item.id} className="cart-item saved-item">
                   <div className="item-image">
-                    <img src={item.image || '/default-product.png'} alt={item.title} 
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = '/default-product.png';
-                      }}
-                    />
+                    {imageLoadErrors[`product_${item.id}`] ? (
+                      <div className="image-placeholder">
+                        <span>Product Image</span>
+                      </div>
+                    ) : (
+                      <img 
+                        src={
+                          item.image 
+                            ? `http://localhost:5000/uploads/${item.image}`
+                            : '/default-product.png'
+                        }
+                        alt={item.pr_name}
+                        onError={() => handleImageError('product', item.id)}
+                      />
+                    )}
                   </div>
                   <div className="item-details">
-                    <h3 className="item-title">{item.title || 'Untitled Product'}</h3>
-                    <p className="item-seller">Sold by: {item.seller || 'Unknown Seller'}</p>
+                    <h3 className="item-title">{item.pr_name || 'Untitled Product'}</h3>
+                    <p className="item-seller">Sold by: {item.seller_id || 'Unknown Seller'}</p>
                     {item.inStock ? (
                       <p className="item-delivery">Delivery by {item.deliveryDate || 'Within 3-5 days'}</p>
                     ) : (

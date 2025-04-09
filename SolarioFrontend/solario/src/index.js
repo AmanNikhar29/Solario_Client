@@ -10,7 +10,10 @@ import Home from "./HomePage/MainPage";
 import Register from './AuthPage/JS/Reg';
 import Customer from './CustDash/CustomerDash';
 import Store from './CustDash/Product';
+import Pay from './CustDash/Pay';
+import Report from './CustDash/Report/Repo';
 import Cart from './CustDash/CartPage';
+import Fav from './CustDash/Fav';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 const root = ReactDOM.createRoot(document.getElementById("root"));
 
@@ -36,7 +39,9 @@ root.render(
         <Route path="/Customer" element={<Customer />} />
         <Route path="/Store/:SellerId" element={<Store />} />
         <Route path="/Cart" element={<Cart />} />
-      
+        <Route path="/Payment" element={<Pay />} />
+        <Route path="/Report" element={<Report />} />
+        <Route path="/Fav" element={<Fav />} />
         
       </Routes>
     </BrowserRouter>

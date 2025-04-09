@@ -7,6 +7,7 @@ const forgotPasswordRoutes = require('./routes/AuthRouter/ForgotPassRoutes')
 const db = require('./config/db'); 
 const app = express();
 const auth = require('./routes/AuthRouter/GoogleRT');
+
 const cartRouter = require('./routes/AuthRouter/CartRouter');
 
 // Add this with your other routes
@@ -31,6 +32,7 @@ app.use('/api/login', customerRoutes);
 app.use('/api/forgotPassword',forgotPasswordRoutes);
 app.use('/api/login',auth);
 app.use('/api/cart', cartRouter);
+
 // Start the server
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

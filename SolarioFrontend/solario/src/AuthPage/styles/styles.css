@@ -48,10 +48,10 @@ body {
 }
 
 .login-container2 {
-  left: 1020px;
+  left: 1018px;
   position: absolute;
   top: 207px;
-  width: 460px;
+  width: 503px;
   height: 550px;
   background: rgb(13, 47, 25);
   border-top-left-radius: 150px;
@@ -61,6 +61,7 @@ body {
   padding: 40px;
   text-align: center;
 }
+
 .Account{
   text-align: center;
 }
@@ -118,7 +119,7 @@ body {
 
 .Header1{
   font-size: xxx-large;
-  
+  margin-bottom: 20px;
 }
 
 .Use{
@@ -149,9 +150,19 @@ body {
   font-size: 12px;
   font-style: italic;
   position: relative;
-  right: 185px;
+  right: 170px;
   color: #666;
   cursor: pointer;
+}
+
+.nsm7Bb-HzV7m-LgbsSe .nsm7Bb-HzV7m-LgbsSe-MJoBVe {
+  -webkit-transition: background-color .218s;
+  transition: background-color .218s;
+  bottom: 0;
+  left: 5px;
+  position: absolute;
+  right: 10px;
+  top: 0;
 }
 
 .forgot-password-login span:hover {

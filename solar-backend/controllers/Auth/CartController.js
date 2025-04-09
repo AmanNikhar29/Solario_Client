@@ -9,11 +9,12 @@ const addToCart = async (req, res) => {
       price,
       product_id, 
       quantity,
-      seller_id
+      seller_id,
+      
     } = req.body;
 
     // Input validation
-    if (!customer_id || !image || !pr_name || !price || !product_id || !quantity || !seller_id) {
+    if (!customer_id || !image || !pr_name || !price || !product_id || !quantity || !seller_id ) {
       return res.status(400).json({ 
         success: false,
         message: 'Missing required fields' 
