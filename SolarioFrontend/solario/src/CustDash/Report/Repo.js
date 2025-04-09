@@ -18,6 +18,7 @@ const RequirementsReportPage = () => {
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [showConfirmationModal, setShowConfirmationModal] = useState(false);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -56,52 +57,40 @@ const RequirementsReportPage = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    
     if (validateForm()) {
-      setIsSubmitting(true);
-      
-      // Simulate API call
-      setTimeout(() => {
-        setIsSubmitting(false);
-        setIsSubmitted(true);
-        console.log('Form submitted:', formData);
-      }, 2000);
+      setShowConfirmationModal(true);
     }
   };
 
-  if (isSubmitted) {
-    return (
-      <div className="submission-success">
-        <div className="success-icon">
-          <i className="fas fa-check-circle"></i>
-        </div>
-        <h2>Thank You for Your Submission!</h2>
-        <p>We've received your requirements and our team will contact you within {formData.preferredResponseTime} hours.</p>
-        <div className="summary-box">
-          <h3>Your Project Summary</h3>
-          <div className="summary-item">
-            <span>Budget:</span>
-            <span>${formData.budget.replace('-', ' - $')}</span>
-          </div>
-          <div className="summary-item">
-            <span>Site Category:</span>
-            <span>{formData.siteCategory.charAt(0).toUpperCase() + formData.siteCategory.slice(1)}</span>
-          </div>
-          <div className="summary-item">
-            <span>Project Size:</span>
-            <span>{formData.areaSize.charAt(0).toUpperCase() + formData.areaSize.slice(1)}</span>
-          </div>
-          <div className="summary-item">
-            <span>Location:</span>
-            <span>{formData.location}</span>
-          </div>
-        </div>
-        <button className="back-to-home" onClick={() => window.location.href = '/Customer'}>
-          Back to Home
-        </button>
-      </div>
-    );
-  }
+  const confirmSubmission = async () => {
+    setShowConfirmationModal(false);
+    setIsSubmitting(true);
+  
+    try {
+      const response = await fetch('http://localhost:5001/api/report/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+      });
+  
+      const result = await response.json();
+  
+      if (response.ok) {
+        setIsSubmitted(true);
+        console.log('Form submitted successfully:', result);
+      } else {
+        console.error('Submission error:', result);
+        alert('Something went wrong. Please try again.');
+      }
+    } catch (error) {
+      console.error('Network error:', error);
+      alert('Network error. Please check your connection.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="requirements-container">
@@ -195,19 +184,18 @@ const RequirementsReportPage = () => {
               <div className="form-group">
                 <label htmlFor="areaSize">Project Size <span className="required">*</span></label>
                 <div className="radio-group">
-                  
-                <div className="form-group">
-                  <label className="required">
-                    <input
-                      type="text"
-                      name="areaSize"
-                      placeholder='Area Size'
-                      onChange={handleChange}
-                    />
-                    <span className="label">Area Size (in sq.ft)</span>
-                  </label>
+                  <div className="form-group">
+                    <label className="required">
+                      <input
+                        type="text"
+                        name="areaSize"
+                        placeholder='Area Size'
+                        onChange={handleChange}
+                      />
+                      <span className="label">Area Size (in sq.ft)</span>
+                    </label>
+                  </div>
                 </div>
-              </div>
               </div>
               
               <div className="form-group">
@@ -333,6 +321,61 @@ const RequirementsReportPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Confirmation Modal */}
+      {showConfirmationModal && (
+        <div className="modal-overlay">
+          <div className="confirmation-modal">
+            <div className="modal-header">
+              <i className="fas fa-exclamation-circle confirmation-icon"></i>
+              <h2>Confirm Submission</h2>
+            </div>
+            <div className="modal-body">
+              <p>Are you sure you want to submit your project requirements?</p>
+              <p>You won't be able to make changes after submission.</p>
+            </div>
+            <div className="modal-footer">
+              <button 
+                onClick={() => setShowConfirmationModal(false)} 
+                className="modal-cancel-button"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={confirmSubmission} 
+                className="modal-confirm-button"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Submitting...' : 'Confirm Submission'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Success Modal */}
+      {isSubmitted && (
+        <div className="modal-overlay">
+          <div className="success-modal">
+            <div className="modal-header">
+              <i className="fas fa-check-circle success-icon"></i>
+              <h2>Success!</h2>
+            </div>
+            <div className="modal-body">
+              <p>Your requirements have been submitted successfully.</p>
+              <p>We'll get back to you within {formData.preferredResponseTime} hours.</p>
+            </div>
+            <div className="modal-footer">
+              <button 
+                onClick={() => setIsSubmitted(false)} 
+                className="modal-close-button"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

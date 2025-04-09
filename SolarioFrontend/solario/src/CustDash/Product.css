@@ -158,6 +158,8 @@
 
 .sort-dropdown {
   padding: 8px 12px;
+  height: 33px;
+  width: 160px;
   border-radius: 4px;
   border: 1px solid #bdc3c7;
   background-color: white;
@@ -326,6 +328,19 @@
   max-width: 400px;
   box-shadow: 0 5px 15px rgba(0,0,0,0.3);
   z-index: 1000;
+}
+
+.cart-icon-container2{
+  position: relative;
+  height: 34px;
+  width: 130px;
+  color: white;
+  border: 1px solid white;
+  background-color: #3498db;
+  border-radius: 15px;
+  cursor: pointer;
+  top: 295.8px;
+  left: 885px;
 }
 
 .modal-buttons {

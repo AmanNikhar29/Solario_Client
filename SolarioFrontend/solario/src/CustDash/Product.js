@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import './Product.css';
 import axios from "axios";
 import { useNavigate, useParams } from 'react-router-dom';
+import { Badge } from "@mui/material";
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+
 
 const Product = () => {
   const [storeData, setStoreData] = useState(null);
@@ -10,9 +13,7 @@ const Product = () => {
   const [error, setError] = useState(null);
   const [sellerId, setSellerId] = useState('');
   const [imageLoadErrors, setImageLoadErrors] = useState({});
-  const [showAddConfirm, setShowAddConfirm] = useState(false);
   const [showAddSuccess, setShowAddSuccess] = useState(false);
-  const [currentProduct, setCurrentProduct] = useState(null);
   const [apiError, setApiError] = useState('');
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [productDetails, setProductDetails] = useState(null);
@@ -204,24 +205,17 @@ const Product = () => {
     }
   };
 
-  // Cart functions
-  const handleAddClick = (product, e) => {
+  // Directly add to cart without confirmation
+  const handleAddToCart = async (product, e) => {
     e.stopPropagation();
-    if (!product?.id) return;
-    setCurrentProduct(product);
-    setShowAddConfirm(true);
-  };
-
-  const confirmAddToCart = async () => {
-    setShowAddConfirm(false);
     
-    if (!currentProduct?.id) {
+    if (!product?.id) {
       setApiError('Invalid product');
       return;
     }
 
-    const customerId = JSON.parse(localStorage.getItem('customer'));
-    if (!customerId?.id) {
+    const customer = JSON.parse(localStorage.getItem('customer'));
+    if (!customer?.id) {
       setApiError('Please login to add items to cart');
       setTimeout(() => navigate('/login'), 1500);
       return;
@@ -229,13 +223,13 @@ const Product = () => {
 
     try {
       const cartData = {
-        customer_id: customerId.id,
-        product_id: currentProduct.id,
-        quantity: quantity,
-        price: currentProduct.price,
-        seller_id: currentProduct.seller_id,
-        pr_name: currentProduct.name,
-        image: currentProduct.product_image,
+        customer_id: customer.id,
+        product_id: product.id,
+        quantity: 1, // Default quantity for direct add
+        price: product.price,
+        seller_id: product.seller_id,
+        pr_name: product.name,
+        image: product.product_image,
       };
       
       const response = await axios.post('http://localhost:5001/api/cart/add', cartData);
@@ -252,10 +246,38 @@ const Product = () => {
   };
 
   // Handle add to cart from product details
-  const handleAddToCartFromDetails = () => {
+  const handleAddToCartFromDetails = async () => {
     if (!selectedProduct?.id) return;
-    setCurrentProduct(selectedProduct);
-    setShowAddConfirm(true);
+    
+    const customer = JSON.parse(localStorage.getItem('customer'));
+    if (!customer?.id) {
+      setApiError('Please login to add items to cart');
+      setTimeout(() => navigate('/login'), 1500);
+      return;
+    }
+
+    try {
+      const cartData = {
+        customer_id: customer.id,
+        product_id: selectedProduct.id,
+        quantity: quantity,
+        price: selectedProduct.price,
+        seller_id: selectedProduct.seller_id,
+        pr_name: selectedProduct.name,
+        image: selectedProduct.product_image,
+      };
+      
+      const response = await axios.post('http://localhost:5001/api/cart/add', cartData);
+
+      if (response.data.success) {
+        setShowAddSuccess(true);
+      } else {
+        setApiError(response.data.message || 'Failed to add product to cart');
+      }
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      setApiError('Error adding product to cart. Please try again.');
+    }
   };
 
   const viewCart = () => {
@@ -265,7 +287,6 @@ const Product = () => {
 
   const continueShopping = () => {
     setShowAddSuccess(false);
-    setCurrentProduct(null);
   };
 
   // Loading state
@@ -301,45 +322,21 @@ const Product = () => {
       </div>
     );
   }
+  const handleCartClick = () => {
+    navigate('/Cart');
+  };
 
   return (
     <div className="store-details-container">
-      {/* Add to Cart Confirmation Modal */}
-      {showAddConfirm && currentProduct && (
-        <div className="modal-overlay" style={{ zIndex: 1000 }}>
-          <div className="modal-container">
-            <h3>Add to Cart</h3>
-            <p>Add "{currentProduct.name || 'this item'}" to your cart?</p>
-            <div className="quantity-selector">
-              <label htmlFor="modal-quantity">Quantity:</label>
-              <div className="quantity-controls">
-                <button 
-                  onClick={() => setQuantity(prev => Math.max(1, prev - 1))}
-                  disabled={quantity <= 1}
-                >
-                  -
-                </button>
-                <span>{quantity}</span>
-                <button 
-                  onClick={() => setQuantity(prev => prev + 1)}
-                  disabled={quantity >= (currentProduct.stock_quantity || 10)}
-                >
-                  +
-                </button>
-              </div>
-            </div>
-            <div className="modal-buttons">
-              <button onClick={confirmAddToCart} className="modal-confirm">Yes</button>
-              <button onClick={() => setShowAddConfirm(false)} className="modal-cancel">No</button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Add to Cart Success Modal */}
+      <button  className="cart-icon-container2" onClick={handleCartClick}>
+              View Cart</button>
       {showAddSuccess && (
         <div className="modal-overlay" style={{ zIndex: 1000 }}>
           <div className="modal-container">
+          <button className="close-modal" onClick={closeProductModal}>
+              &times;
+            </button>
             <h3>Success!</h3>
             <p>Product added to cart successfully!</p>
             <div className="modal-buttons">
@@ -617,7 +614,7 @@ const Product = () => {
                   <div className="product-actions">
                     <button 
                       className="add-to-cart" 
-                      onClick={(e) => handleAddClick(product, e)}
+                      onClick={(e) => handleAddToCart(product, e)}
                       disabled={product.stock_quantity <= 0}
                     >
                       Add to Cart
