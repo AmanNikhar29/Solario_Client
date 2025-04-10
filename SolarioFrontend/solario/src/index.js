@@ -13,6 +13,9 @@ import Store from './CustDash/Product';
 import Pay from './CustDash/Pay';
 import Report from './CustDash/Report/Repo';
 import Cart from './CustDash/CartPage';
+import Order from './CustDash/Order';
+import Add from './CustDash/Report/Address';
+import Delivery from './CustDash/Report/Delivery';
 import Fav from './CustDash/Fav';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 const root = ReactDOM.createRoot(document.getElementById("root"));
@@ -42,7 +45,10 @@ root.render(
         <Route path="/Payment" element={<Pay />} />
         <Route path="/Report" element={<Report />} />
         <Route path="/Fav" element={<Fav />} />
-        
+        <Route path="/AddressDetails" element={<Add />} />
+        <Route path="/Order" element={<Order />} />
+        <Route path="/Delivery" element={<Delivery />} />
+
       </Routes>
     </BrowserRouter>
     </GoogleOAuthProvider>

@@ -1,24 +1,50 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './Report.css';
 
 const RequirementsReportPage = () => {
   const [formData, setFormData] = useState({
+    customer_id: '',
     name: '',
     email: '',
     phone: '',
     budget: '5000-10000',
-    siteCategory: 'ecommerce',
-    areaSize: 'medium',
+    site_category: 'ecommerce',
+    area_size: 'medium',
     location: '',
-    preferredResponseTime: '48',
-    additionalRequirements: '',
-    agreeTerms: false
+    preferred_response_time: '48',
+    additional_requirements: '',
+    agree_terms: false
   });
 
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+  const [customerDetails, setCustomerDetails] = useState(null);
+
+  useEffect(() => {
+    // Load customer data from localStorage
+    const loadCustomerData = () => {
+      const storedCustomer = localStorage.getItem('customer');
+      if (storedCustomer) {
+        try {
+          const customer = JSON.parse(storedCustomer);
+          setCustomerDetails(customer);
+          setFormData(prev => ({
+            ...prev,
+            customer_id: customer.id || customer._id || '',
+            name: customer.name || '',
+            email: customer.email || '',
+            phone: customer.phone || ''
+          }));
+        } catch (error) {
+          console.error("Error parsing customer data:", error);
+        }
+      }
+    };
+
+    loadCustomerData();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -47,8 +73,8 @@ const RequirementsReportPage = () => {
       newErrors.location = 'Location is required';
     }
     
-    if (!formData.agreeTerms) {
-      newErrors.agreeTerms = 'You must agree to the terms';
+    if (!formData.agree_terms) {
+      newErrors.agree_terms = 'You must agree to the terms';
     }
     
     setErrors(newErrors);
@@ -70,7 +96,8 @@ const RequirementsReportPage = () => {
       const response = await fetch('http://localhost:5001/api/report/submit', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
         body: JSON.stringify(formData)
       });
@@ -82,7 +109,7 @@ const RequirementsReportPage = () => {
         console.log('Form submitted successfully:', result);
       } else {
         console.error('Submission error:', result);
-        alert('Something went wrong. Please try again.');
+        alert(`Error: ${result.message || 'Something went wrong. Please try again.'}`);
       }
     } catch (error) {
       console.error('Network error:', error);
@@ -96,7 +123,13 @@ const RequirementsReportPage = () => {
     <div className="requirements-container">
       <div className="requirements-header">
         <h1>Project Requirements</h1>
-        <p>Fill out this form to get a customized quote for your website project</p>
+        <p>Fill out this form to get a customized quote for your project</p>
+        {customerDetails && (
+          <div className="customer-badge">
+            <i className="fas fa-user-circle"></i>
+            <span>{customerDetails.name} (ID: {formData.customer_id})</span>
+          </div>
+        )}
       </div>
       
       <div className="requirements-content">
@@ -104,6 +137,7 @@ const RequirementsReportPage = () => {
           <form onSubmit={handleSubmit} className="requirements-form">
             <div className="form-section">
               <h3><i className="fas fa-user"></i> Personal Information</h3>
+              
               <div className="form-group">
                 <label htmlFor="name">Full Name <span className="required">*</span></label>
                 <input
@@ -151,6 +185,7 @@ const RequirementsReportPage = () => {
             
             <div className="form-section">
               <h3><i className="fas fa-cog"></i> Project Details</h3>
+              
               <div className="form-group">
                 <label htmlFor="budget">Estimated Budget <span className="required">*</span></label>
                 <select
@@ -168,34 +203,30 @@ const RequirementsReportPage = () => {
               </div>
               
               <div className="form-group">
-                <label htmlFor="siteCategory">Site Category <span className="required">*</span></label>
+                <label htmlFor="site_category">Project Type <span className="required">*</span></label>
                 <select
-                  id="siteCategory"
-                  name="siteCategory"
-                  value={formData.siteCategory}
+                  id="site_category"
+                  name="site_category"
+                  value={formData.site_category}
                   onChange={handleChange}
                 >
-                  <option value="ecommerce">Industrial</option>
-                  <option value="portfolio">Residential</option>
-                  <option value="blog">Commercial</option>
+                  <option value="residential">Residential</option>
+                  <option value="commercial">Commercial</option>
+                  <option value="industrial">Industrial</option>
+                  <option value="institutional">Institutional</option>
                 </select>
               </div>
               
               <div className="form-group">
-                <label htmlFor="areaSize">Project Size <span className="required">*</span></label>
-                <div className="radio-group">
-                  <div className="form-group">
-                    <label className="required">
-                      <input
-                        type="text"
-                        name="areaSize"
-                        placeholder='Area Size'
-                        onChange={handleChange}
-                      />
-                      <span className="label">Area Size (in sq.ft)</span>
-                    </label>
-                  </div>
-                </div>
+                <label htmlFor="area_size">Project Size (sq ft) <span className="required">*</span></label>
+                <input
+                  type="text"
+                  id="area_size"
+                  name="area_size"
+                  value={formData.area_size}
+                  onChange={handleChange}
+                  placeholder="e.g., 1500"
+                />
               </div>
               
               <div className="form-group">
@@ -206,18 +237,18 @@ const RequirementsReportPage = () => {
                   name="location"
                   value={formData.location}
                   onChange={handleChange}
-                  placeholder="City, Country"
+                  placeholder="City, State/Province, Country"
                   className={errors.location ? 'error' : ''}
                 />
                 {errors.location && <span className="error-message">{errors.location}</span>}
               </div>
               
               <div className="form-group">
-                <label htmlFor="preferredResponseTime">Preferred Response Time <span className="required">*</span></label>
+                <label htmlFor="preferred_response_time">Preferred Response Time <span className="required">*</span></label>
                 <select
-                  id="preferredResponseTime"
-                  name="preferredResponseTime"
-                  value={formData.preferredResponseTime}
+                  id="preferred_response_time"
+                  name="preferred_response_time"
+                  value={formData.preferred_response_time}
                   onChange={handleChange}
                 >
                   <option value="24">24 hours</option>
@@ -231,13 +262,13 @@ const RequirementsReportPage = () => {
             <div className="form-section">
               <h3><i className="fas fa-file-alt"></i> Additional Requirements</h3>
               <div className="form-group">
-                <label htmlFor="additionalRequirements">Special Requests or Notes</label>
+                <label htmlFor="additional_requirements">Special Requests or Notes</label>
                 <textarea
-                  id="additionalRequirements"
-                  name="additionalRequirements"
-                  value={formData.additionalRequirements}
+                  id="additional_requirements"
+                  name="additional_requirements"
+                  value={formData.additional_requirements}
                   onChange={handleChange}
-                  placeholder="Describe any specific features, design preferences, or other requirements..."
+                  placeholder="Describe any specific requirements, materials, or special considerations..."
                   rows="4"
                 />
               </div>
@@ -245,16 +276,16 @@ const RequirementsReportPage = () => {
               <div className="form-group checkbox-group">
                 <input
                   type="checkbox"
-                  id="agreeTerms"
-                  name="agreeTerms"
-                  checked={formData.agreeTerms}
+                  id="agree_terms"
+                  name="agree_terms"
+                  checked={formData.agree_terms}
                   onChange={handleChange}
-                  className={errors.agreeTerms ? 'error' : ''}
+                  className={errors.agree_terms ? 'error' : ''}
                 />
-                <label htmlFor="agreeTerms">
+                <label htmlFor="agree_terms">
                   I agree to the <a href="/terms">Terms of Service</a> and <a href="/privacy">Privacy Policy</a> <span className="required">*</span>
                 </label>
-                {errors.agreeTerms && <span className="error-message">{errors.agreeTerms}</span>}
+                {errors.agree_terms && <span className="error-message">{errors.agree_terms}</span>}
               </div>
             </div>
             
@@ -264,7 +295,7 @@ const RequirementsReportPage = () => {
                   <i className="fas fa-spinner fa-spin"></i> Processing...
                 </>
               ) : (
-                'Get Your Custom Quote'
+                'Submit Requirements'
               )}
             </button>
           </form>
@@ -293,20 +324,6 @@ const RequirementsReportPage = () => {
             </ul>
           </div>
           
-          <div className="testimonial-card">
-            <div className="testimonial-content">
-              <i className="fas fa-quote-left"></i>
-              <p>Providing detailed requirements helped us get exactly what we wanted in half the expected time.</p>
-            </div>
-            <div className="testimonial-author">
-              <img src="https://via.placeholder.com/50" alt="Sarah Johnson" />
-              <div>
-                <h4>Sarah Johnson</h4>
-                <p>CEO, TechSolutions Inc.</p>
-              </div>
-            </div>
-          </div>
-          
           <div className="support-card">
             <h3>Need Help?</h3>
             <p>Our team is available to assist you with filling out this form.</p>
@@ -316,7 +333,11 @@ const RequirementsReportPage = () => {
             </div>
             <div className="support-contact">
               <i className="fas fa-envelope"></i>
-              <span>support@webdevpro.com</span>
+              <span>support@constructionpro.com</span>
+            </div>
+            <div className="support-contact">
+              <i className="fas fa-comment-alt"></i>
+              <span>Live Chat</span>
             </div>
           </div>
         </div>
@@ -331,22 +352,31 @@ const RequirementsReportPage = () => {
               <h2>Confirm Submission</h2>
             </div>
             <div className="modal-body">
-              <p>Are you sure you want to submit your project requirements?</p>
-              <p>You won't be able to make changes after submission.</p>
+              <p>Please review your information before submitting:</p>
+              <div className="submission-review">
+                <p><strong>Name:</strong> {formData.name}</p>
+                <p><strong>Project Type:</strong> {formData.site_category}</p>
+                <p><strong>Budget:</strong> {formData.budget}</p>
+                <p><strong>Location:</strong> {formData.location}</p>
+              </div>
             </div>
             <div className="modal-footer">
               <button 
                 onClick={() => setShowConfirmationModal(false)} 
                 className="modal-cancel-button"
               >
-                Cancel
+                <i className="fas fa-edit"></i> Edit Details
               </button>
               <button 
                 onClick={confirmSubmission} 
                 className="modal-confirm-button"
                 disabled={isSubmitting}
               >
-                {isSubmitting ? 'Submitting...' : 'Confirm Submission'}
+                {isSubmitting ? (
+                  <><i className="fas fa-spinner fa-spin"></i> Submitting...</>
+                ) : (
+                  <><i className="fas fa-check"></i> Confirm Submission</>
+                )}
               </button>
             </div>
           </div>
@@ -359,18 +389,27 @@ const RequirementsReportPage = () => {
           <div className="success-modal">
             <div className="modal-header">
               <i className="fas fa-check-circle success-icon"></i>
-              <h2>Success!</h2>
+              <h2>Submission Successful!</h2>
             </div>
             <div className="modal-body">
-              <p>Your requirements have been submitted successfully.</p>
-              <p>We'll get back to you within {formData.preferredResponseTime} hours.</p>
+              <p>Your project requirements have been received.</p>
+              <p>We'll contact you within {formData.preferred_response_time} hours with a customized proposal.</p>
+              <div className="reference-number">
+                <p>Your reference number:</p>
+                <div className="ref-number">
+                  {formData.customer_id}
+                </div>
+              </div>
             </div>
             <div className="modal-footer">
               <button 
-                onClick={() => setIsSubmitted(false)} 
+                onClick={() => {
+                  setIsSubmitted(false);
+                  window.location.href = '/Customer';
+                }} 
                 className="modal-close-button"
               >
-                Close
+                <i className="fas fa-home"></i> Return to Dashboard
               </button>
             </div>
           </div>

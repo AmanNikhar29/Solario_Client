@@ -26,16 +26,16 @@ const PaymentPage = () => {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [imageLoadErrors, setImageLoadErrors] = useState({});
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [orderDetails, setOrderDetails] = useState({
+    orderId: '',
+    orderTotal: 0,
+    itemsCount: 0
+  });
   
   const customerData = JSON.parse(localStorage.getItem('customer'));
   const customerId = customerData?.id;
   const [activeStep, setActiveStep] = useState('payment');
-
-  // Image error handler
-  const handleImageError = (imageType, id) => {
-    setImageLoadErrors(prev => ({ ...prev, [`${imageType}_${id}`]: true }));
-  };
 
   // Fetch order summary from API
   useEffect(() => {
@@ -55,22 +55,19 @@ const PaymentPage = () => {
         
         const data = await response.json();
         
-        // Validate and process the API response
         if (!data) {
           throw new Error('No data received from the server');
         }
         
-        // Process items
         const processedItems = Array.isArray(data.items) 
           ? data.items.map(item => ({
               ...item,
-              image: item.image ? `http://localhost:5000/uploads/${item.image}` : getDefaultProductImage(item.pr_name),
+              product_id: item.id,
               price: parseFloat(item.price || 0).toFixed(2),
               quantity: parseInt(item.quantity || 1)
             }))
           : [];
         
-        // Calculate numeric values with proper fallbacks
         const subtotal = parseFloat(data.subtotal || processedItems.reduce((sum, item) => sum + (parseFloat(item.price) * item.quantity), 0)).toFixed(2);
         const shipping = parseFloat(data.shipping || 0).toFixed(2);
         const discount = parseFloat(data.discount || 0).toFixed(2);
@@ -93,11 +90,6 @@ const PaymentPage = () => {
 
     fetchOrderSummary();
   }, [customerId]);
-
-  // Helper function to get a default product image based on product name
-  const getDefaultProductImage = (productName) => {
-    return '/default-product.png';
-  };
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -143,8 +135,8 @@ const PaymentPage = () => {
       setIsProcessing(true);
       
       try {
-        // First, create the order in the database
-        const orderResponse = await fetch('http://localhost:5001/api/orders', {
+        // Create the order
+        const orderResponse = await fetch('http://localhost:5001/api/order', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -156,30 +148,30 @@ const PaymentPage = () => {
             shipping: orderSummary.shipping,
             discount: orderSummary.discount,
             total: orderSummary.total,
-            paymentMethod: formData.paymentMethod,
-            paymentStatus: 'completed',
-            status: 'processing'
+            paymentMethod: formData.paymentMethod
           })
         });
 
         if (!orderResponse.ok) {
-          throw new Error('Failed to create order');
+          throw new Error('Failed to process payment and create order');
         }
 
         const orderData = await orderResponse.json();
         
-        // Then clear the cart
-        const clearCartResponse = await fetch(`http://localhost:5001/api/cart/${customerId}`, {
+        // Clear the cart after successful order placement
+        await fetch(`http://localhost:5001/api/cart/${customerId}`, {
           method: 'DELETE'
         });
         
-        if (!clearCartResponse.ok) {
-          console.error('Failed to clear cart after payment');
-        }
+        setOrderDetails({
+          orderId: orderData.orderId,
+          orderTotal: orderSummary.total,
+          itemsCount: orderSummary.items.length
+        });
         
-        // Navigate to the success page
         setPaymentSuccess(true);
-        navigate('/order-success', { state: { orderId: orderData.orderId } });
+        setShowSuccessModal(true);
+        
       } catch (err) {
         console.error('Payment processing error:', err);
         setError(err.message || 'Payment processing failed. Please try again.');
@@ -223,29 +215,72 @@ const PaymentPage = () => {
   };
 
   const navigateToStep = (step) => {
-    if (step === 'cart') {
-      navigate('/cart');
-    } else if (step === 'details') {
-      navigate('/checkout/shipping');
+    if (step === 'address') {
+      navigate('/address');
+    } else if (step === 'summary') {
+      navigate('/order');
     }
+  };
+
+  const handleSuccessModalClose = () => {
+    setShowSuccessModal(false);
+    navigate('/Delivery'); // Make sure this matches your route exactly
   };
 
   return (
     <div className="payment-container">
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className="success-modal-overlay">
+          <div className="success-modal">
+            <div className="success-modal-content">
+              <div className="success-icon">
+                <svg viewBox="0 0 24 24">
+                  <path fill="currentColor" d="M12,2C6.48,2,2,6.48,2,12s4.48,10,10,10s10-4.48,10-10S17.52,2,12,2z M10,17l-5-5l1.41-1.41L10,14.17l7.59-7.59L19,8L10,17z" />
+                </svg>
+              </div>
+              <h2>Payment Successful!</h2>
+              <p>Your order #{orderDetails.orderId} has been placed successfully.</p>
+              <div className="order-details">
+                <p><strong>Total Paid:</strong> ${orderDetails.orderTotal}</p>
+                <p><strong>Items:</strong> {orderDetails.itemsCount}</p>
+              </div>
+              <div className="success-actions">
+                <button 
+                  className="view-order-btn" 
+                  onClick={handleSuccessModalClose}
+                >
+                  View Order Details
+                </button>
+                <button 
+                  className="continue-shopping-btn"
+                  onClick={() => {
+                    setShowSuccessModal(false);
+                    navigate('/');
+                  }}
+                >
+                  Continue Shopping
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="payment-header">
         <h1>Checkout</h1>
         <div className="progress-steps">
           <span 
-            className={`step ${activeStep === 'cart' ? 'active' : 'completed'}`}
-            onClick={() => navigateToStep('cart')}
+            className={`step ${activeStep === 'address' ? 'active' : 'completed'}`}
+            onClick={() => navigateToStep('address')}
           >
-            Cart
+            Address Details
           </span>
           <span 
-            className={`step ${activeStep === 'details' ? 'active' : 'completed'}`}
-            onClick={() => navigateToStep('details')}
+            className={`step ${activeStep === 'summary' ? 'active' : 'completed'}`}
+            onClick={() => navigateToStep('summary')}
           >
-            Shipping & Address
+            Order Summary
           </span>
           <span 
             className={`step ${activeStep === 'payment' ? 'active' : ''}`}
@@ -256,6 +291,31 @@ const PaymentPage = () => {
       </div>
       
       <div className="payment-content">
+        <div className="order-summary-preview">
+          <h3>Order Total</h3>
+          <div className="summary-totals">
+            <div className="summary-row">
+              <span>Subtotal</span>
+              <span>${orderSummary.subtotal}</span>
+            </div>
+            <div className="summary-row">
+              <span>Shipping</span>
+              <span>
+                {orderSummary.shipping === '0.00' ? 'Free' : `$${orderSummary.shipping}`}
+              </span>
+            </div>
+            {parseFloat(orderSummary.discount) > 0 && (
+              <div className="summary-row discount">
+                <span>Discount</span>
+                <span>-${orderSummary.discount}</span>
+              </div>
+            )}
+            <div className="summary-row total">
+              <span>Total</span>
+              <span>${orderSummary.total}</span>
+            </div>
+          </div>
+        </div>
         <div className="payment-form-container">
           <h2>Payment Method</h2>
           
@@ -404,97 +464,6 @@ const PaymentPage = () => {
               <i className="fas fa-lock"></i> Your payment is secure and encrypted
             </div>
           </form>
-        </div>
-        
-        <div className="order-summary">
-          <h2>Order Summary</h2>
-          
-          {loading ? (
-            <div className="loading-message">
-              <div className="spinner"></div>
-              <p>Loading order details...</p>
-            </div>
-          ) : error ? (
-            <div className="error-message">
-              <p>Error loading order details: {error}</p>
-              <button onClick={() => window.location.reload()}>Try Again</button>
-            </div>
-          ) : (
-            <>
-              <div className="order-items">
-                {orderSummary.items.length > 0 ? (
-                  orderSummary.items.map((item, index) => (
-                    <div className="order-item" key={index}>
-                      <div className="item-image">
-                        {imageLoadErrors[`product_${item.id}`] ? (
-                          <div className="image-placeholder">
-                            <span>Product Image</span>
-                          </div>
-                        ) : (
-                          <img 
-                            src={item.image} 
-                            alt={item.pr_name} 
-                            onError={() => handleImageError('product', item.id)}
-                          />
-                        )}
-                      </div>
-                      <div className="item-details">
-                        <h4>{item.pr_name}</h4>
-                        {item.variant && <p>Variant: {item.variant}</p>}
-                        {item.color && <p>Color: {item.color}</p>}
-                        <p>Qty: {item.quantity}</p>
-                      </div>
-                      <div className="item-price">
-                        ${item.price}
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="empty-cart-message">
-                    <p>Your cart is empty</p>
-                    <button onClick={() => navigate('/products')}>
-                      Continue Shopping
-                    </button>
-                  </div>
-                )}
-              </div>
-              
-              {orderSummary.items.length > 0 && (
-                <div className="summary-totals">
-                  <div className="summary-row">
-                    <span>Subtotal</span>
-                    <span>${orderSummary.subtotal}</span>
-                  </div>
-                  <div className="summary-row">
-                    <span>Shipping</span>
-                    <span>
-                      {orderSummary.shipping === '0.00' ? 'Free' : `$${orderSummary.shipping}`}
-                    </span>
-                  </div>
-                  {parseFloat(orderSummary.discount) > 0 && (
-                    <div className="summary-row discount">
-                      <span>Discount</span>
-                      <span>-${orderSummary.discount}</span>
-                    </div>
-                  )}
-                  <div className="summary-row total">
-                    <span>Total</span>
-                    <span>${orderSummary.total}</span>
-                  </div>
-                </div>
-              )}
-            </>
-          )}
-          
-          <div className="customer-support">
-            <h4>Need help?</h4>
-            <p>
-              <i className="fas fa-phone"></i> Call us at (800) 123-4567
-            </p>
-            <p>
-              <i className="fas fa-envelope"></i> Email us at support@example.com
-            </p>
-          </div>
         </div>
       </div>
     </div>

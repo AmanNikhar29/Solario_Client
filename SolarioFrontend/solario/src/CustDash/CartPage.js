@@ -137,7 +137,7 @@ const CartPage = () => {
       alert('Your cart is empty. Please add items before checkout.');
       return;
     }
-    navigate('/Payment')
+    navigate('/AddressDetails')
   };
 
   if (loading) {
@@ -242,7 +242,7 @@ const CartPage = () => {
               <p>Your shopping cart is waiting. Give it purpose!</p>
               <button 
                 className="continue-shopping" 
-                onClick={() => window.location.href = '/'}
+                onClick={() => navigate('/Customer')}
               >
                 Continue Shopping
               </button>

@@ -332,15 +332,15 @@
 
 .cart-icon-container2{
   position: relative;
-  height: 34px;
+  height: 35px;
   width: 130px;
   color: white;
   border: 1px solid white;
   background-color: #3498db;
   border-radius: 15px;
   cursor: pointer;
-  top: 295.8px;
-  left: 885px;
+  top: 275.8px;
+  left: 855px;
 }
 
 .modal-buttons {

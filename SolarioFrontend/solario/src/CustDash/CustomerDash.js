@@ -2,7 +2,18 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import "./Customer.css";
-import { Drawer, Badge } from "@mui/material";
+import { 
+  Drawer, 
+  Badge, 
+  Dialog, 
+  DialogActions, 
+  DialogContent, 
+  DialogContentText, 
+  DialogTitle, 
+  Button,
+  Snackbar,
+  Alert 
+} from "@mui/material";
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import MenuIcon from '@mui/icons-material/Menu';
@@ -16,6 +27,7 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import SettingsIcon from '@mui/icons-material/Settings';
 import ShoppingBagIcon from '@mui/icons-material/ShoppingBag';
+import SendIcon from '@mui/icons-material/Send';
 
 const CustomerDashboard = () => {
   const [sellers, setSellers] = useState([]);
@@ -27,6 +39,12 @@ const CustomerDashboard = () => {
   const [locationError, setLocationError] = useState(null);
   const [cartItemsCount, setCartItemsCount] = useState(0);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [selectedSellerId, setSelectedSellerId] = useState(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [sendingReport, setSendingReport] = useState(false);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
   const navigate = useNavigate();
   
   // Get customer data directly from localStorage
@@ -112,24 +130,101 @@ const CustomerDashboard = () => {
   };
 
   const handleFavourate = async () => {
-    navigate('/Fav')
-  }
+    navigate('/Fav');
+  };
 
   const handleLogout = async () => {
     const confirmLogout = window.confirm("Are you sure you want to logout?");
     
-      if (!confirmLogout) {
-        return;
-      }
+    if (!confirmLogout) {
+      return;
+    }
+    
     try {
-      
-    } catch (error) {
-      console.error("Logout error:", error);
-    } finally {
       localStorage.removeItem('customer');
       localStorage.removeItem('userLocation');
       navigate('/login');
+    } catch (error) {
+      console.error("Logout error:", error);
     }
+  };
+
+  const handleSendReportClick = (sellerId, e) => {
+    e.stopPropagation();
+    setSelectedSellerId(sellerId);
+    setConfirmOpen(true);
+  };
+
+  const handleConfirmSendReport = async () => {
+    if (!customerId || !selectedSellerId) {
+      setSnackbarSeverity("error");
+      setSnackbarMessage("Customer ID or Seller ID is missing");
+      setSnackbarOpen(true);
+      setConfirmOpen(false);
+      return;
+    }
+
+    try {
+      setSendingReport(true);
+      
+      const response = await axios.post(
+        "http://localhost:5001/api/sendReport/send-requirement-report",
+        {
+          customerId: customerId,
+          sellerId: selectedSellerId
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          timeout: 10000
+        }
+      );
+      
+      if (response.data.success) {
+        setSnackbarMessage(response.data.message || "Requirements successfully sent to seller");
+        setSnackbarSeverity("success");
+      } else {
+        setSnackbarMessage(response.data.message || "Failed to send requirements report");
+        setSnackbarSeverity("error");
+      }
+    } catch (error) {
+      console.error("Error sending report:", error);
+      
+      let errorMessage = "An error occurred while sending the report";
+      if (error.response) {
+        // Handle backend validation errors
+        if (error.response.status === 400) {
+          errorMessage = error.response.data.message || "Validation error";
+        } else if (error.response.status === 404) {
+          errorMessage = error.response.data.message || "Customer or requirements not found";
+        } else if (error.response.data && error.response.data.message) {
+          errorMessage = error.response.data.message;
+        }
+      } else if (error.code === 'ECONNABORTED') {
+        errorMessage = "Request timeout - seller server took too long to respond";
+      } else if (error.request) {
+        errorMessage = "Seller server is not responding";
+      }
+
+      setSnackbarMessage(errorMessage);
+      setSnackbarSeverity("error");
+    } finally {
+      setSendingReport(false);
+      setConfirmOpen(false);
+      setSnackbarOpen(true);
+    }
+  };
+
+  const handleCloseConfirm = () => {
+    setConfirmOpen(false);
+  };
+
+  const handleCloseSnackbar = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setSnackbarOpen(false);
   };
 
   const filteredSellers = sellers.filter(seller =>
@@ -261,7 +356,7 @@ const CustomerDashboard = () => {
             />
             <i className="search-icon">🔍</i>
           </div>
-          <button onClick={()=>navigate('/Report')} className="Report">Send Requirements Report</button>
+          <button onClick={() => navigate('/Report')} className="Report">Create Report</button>
         </div>
         
         {loading ? (
@@ -308,7 +403,15 @@ const CustomerDashboard = () => {
                         <div className="stars">★★★★☆</div>
                         <span className="rating-text">4.2 (120)</span>
                       </div>
-                      <button className="view-store-btn">Visit Store</button>
+                      <div className="seller-actions">
+                        <button className="view-store-btn">Visit Store</button>
+                        <button 
+                          className="send-report-btn"
+                          onClick={(e) => handleSendReportClick(seller.seller_id, e)}
+                        >
+                          <SendIcon fontSize="small" /> Send Requirements
+                        </button>
+                      </div>
                     </div>
                   </div>
                 );
@@ -321,6 +424,60 @@ const CustomerDashboard = () => {
             )}
           </div>
         )}
+
+        {/* Confirmation Dialog */}
+        <Dialog
+          open={confirmOpen}
+          onClose={handleCloseConfirm}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+        >
+          <DialogTitle id="alert-dialog-title">Send Requirements Report</DialogTitle>
+          <DialogContent>
+            <DialogContentText id="alert-dialog-description">
+              Are you sure you want to send your requirements report to this store? 
+              The store owner will receive all your saved requirements including:
+              <ul>
+                <li>Your budget</li>
+                <li>Site category</li>
+                <li>Area size</li>
+                <li>Location preferences</li>
+                <li>Any additional requirements</li>
+              </ul>
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseConfirm} disabled={sendingReport}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleConfirmSendReport} 
+              disabled={sendingReport}
+              color="primary"
+              autoFocus
+              startIcon={<SendIcon />}
+            >
+              {sendingReport ? 'Sending...' : 'Send Report'}
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Snackbar for notifications */}
+        <Snackbar
+          open={snackbarOpen}
+          autoHideDuration={6000}
+          onClose={handleCloseSnackbar}
+          anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        >
+          <Alert 
+            onClose={handleCloseSnackbar} 
+            severity={snackbarSeverity}
+            sx={{ width: '100%' }}
+            variant="filled"
+          >
+            {snackbarMessage}
+          </Alert>
+        </Snackbar>
       </div>
     </div>
   );

@@ -25,7 +25,7 @@
   }
   
   .cart-container {
-    display: flex;
+    display: grid;
     gap: 20px;
   }
   
@@ -40,10 +40,13 @@
   /* Cart Items */
   .cart-item {
     display: flex;
-    padding: 20px 0;
-    border-bottom: 1px solid #ddd;
-    gap: 20px;
-  }
+    flex: 2 1;
+    background: #fff;
+    padding: 25px;
+    border-radius: 8px;
+    width: 1160px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1)
+}
   
   .item-image {
     width: 140px;
@@ -174,6 +177,7 @@
     border: 1px solid #ddd;
     border-radius: 8px;
     padding: 20px;
+    width: 1160px;
     background: #fff;
     box-shadow: 0 1px 4px rgba(0,0,0,0.1);
   }

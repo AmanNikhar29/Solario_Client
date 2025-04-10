@@ -92,11 +92,13 @@ const Login = () => {
         
 
         // Store customer data in localStorage
+        localStorage.setItem('customer2', JSON.stringify(data.customer.id));
+        console.log('Customer ID:', data.customer.id);
+       
         localStorage.setItem('customer', JSON.stringify(data.customer));
         localStorage.setItem('token', data.token);
   
         console.log('Customer ID:', data.customer);
-       
 
         setTimeout(() => {
           navigate('/Customer');

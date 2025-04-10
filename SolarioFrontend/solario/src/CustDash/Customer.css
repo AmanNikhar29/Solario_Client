@@ -36,6 +36,9 @@
   color: white;
   width: 141px;
   height: 47px;
+  font-family: 'auto';
+  font-weight: bold;
+  font-size: 15px;
 }
 
 .dashboard-header {
@@ -99,6 +102,255 @@
   top: 2px;
   font-size: 32px !important;
   color: var(--dark-color);
+}
+
+/* Add these to your existing Customer.css file */
+
+/* Report Status Notification */
+.report-status {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 12px 24px;
+  border-radius: 4px;
+  color: white;
+  font-weight: 500;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  animation: slideDown 0.3s ease-out;
+}
+
+.report-status.success {
+  background-color: #4caf50;
+}
+
+.report-status.error {
+  background-color: #f44336;
+}
+
+@keyframes slideDown {
+  from {
+    top: -50px;
+    opacity: 0;
+  }
+  to {
+    top: 20px;
+    opacity: 1;
+  }
+}
+
+/* Seller Card Enhancements */
+.seller-card {
+  position: relative;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.seller-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.seller-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.view-store-btn {
+  background-color: #1976d2;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  flex: 1;
+  transition: background-color 0.2s;
+}
+
+.view-store-btn:hover {
+  background-color: #1565c0;
+}
+
+.send-report-btn {
+  background-color: #ff9800;
+  color: white;
+  border: none;
+  padding: 2px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  transition: background-color 0.2s;
+}
+
+.send-report-btn:hover {
+  background-color: #fb8c00;
+}
+
+.send-report-btn:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+/* Confirmation Dialog Styles */
+.MuiDialog-paper {
+  border-radius: 12px !important;
+  padding: 16px;
+}
+
+.MuiDialogTitle-root {
+  font-weight: 600 !important;
+  color: #333;
+}
+
+.MuiDialogContentText-root {
+  color: #555 !important;
+  font-size: 15px !important;
+  line-height: 1.5;
+}
+
+.MuiDialogActions-root {
+  padding: 16px 24px !important;
+  justify-content: flex-end;
+}
+
+/* Snackbar Styles */
+.MuiSnackbar-root {
+  top: 80px !important;
+}
+
+.MuiAlert-root {
+  border-radius: 8px !important;
+  font-weight: 500;
+}
+
+.MuiAlert-filledSuccess {
+  background-color: #4caf50 !important;
+}
+
+.MuiAlert-filledError {
+  background-color: #f44336 !important;
+}
+
+/* Seller Info Enhancements */
+.seller-info {
+  padding: 16px;
+}
+
+.seller-name {
+  font-size: 1.2rem;
+  margin-bottom: 8px;
+  color: #333;
+}
+
+.seller-address {
+  color: #666;
+  font-size: 0.9rem;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.rating-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.stars {
+  color: #ffc107;
+  font-size: 1rem;
+}
+
+.rating-text {
+  color: #666;
+  font-size: 0.85rem;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .seller-actions {
+    flex-direction: column;
+  }
+  
+  .view-store-btn,
+  .send-report-btn {
+    width: 100%;
+  }
+  
+  .report-status {
+    width: 90%;
+    text-align: center;
+  }
+}
+
+/* Animation for Loading */
+@keyframes pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}
+
+.button-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  animation: pulse 1.5s infinite;
+}
+
+.spinner {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Image Container Enhancements */
+.image-container {
+  height: 180px;
+  overflow: hidden;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+.seller-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.seller-card:hover .seller-image {
+  transform: scale(1.05);
+}
+
+.seller-actions{
+  display: flex;
+}
+
+.image-placeholder {
+  width: 100%;
+  height: 100%;
+  background-color: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #999;
 }
 
 .cart-icon-container:hover, .fav-icon-container:hover {
@@ -423,12 +675,7 @@
     gap: 15px;
   }
 
-  .Report {
-    left: auto;
-    bottom: auto;
-    margin-top: 15px;
-    width: 100%;
-  }
+  
 }
 
 @media (max-width: 480px) {

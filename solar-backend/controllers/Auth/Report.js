@@ -3,6 +3,7 @@ const db = require('../../config/db');
 const submitRequirements = async (req, res) => {
   try {
     const {
+      customer_id,
       name,
       email,
       phone,
@@ -13,16 +14,18 @@ const submitRequirements = async (req, res) => {
       preferredResponseTime,
       additionalRequirements,
       agreeTerms
+      
     } = req.body;
 
     const query = `
       INSERT INTO requirements_report (
-        name, email, phone, budget, site_category, area_size, location,
+        customer_id, name, email, phone, budget, site_category, area_size, location,
         preferred_response_time, additional_requirements, agree_terms
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
     const values = [
+      customer_id,
       name,
       email,
       phone,
